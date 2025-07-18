@@ -40,7 +40,7 @@ class Up(nn.Module):
     self.conv = DoubleConv(in_channels, out_channels)
 
   def forward(self, x1, x2):
-    x1 = self.up(x)
+    x1 = self.up(x1)
     diffY = x2.size()[2] - x1.size()[2]
     diffX = x2.size()[3] - x1.size()[3]
 

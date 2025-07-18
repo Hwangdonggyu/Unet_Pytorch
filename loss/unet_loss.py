@@ -7,7 +7,7 @@ class DiceLoss(nn.Module):
         super(DiceLoss, self).__init__()
         self.smooth = smooth
 
-    def foward(self, pred, target):
+    def forward(self, pred, target):
         pred = torch.sigmoid(pred)
         pred_flat = pred.view(-1)
         target_flat = target.view(-1)
