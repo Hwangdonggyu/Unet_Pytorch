@@ -11,7 +11,7 @@ import os
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
-data_root = '/Users/hwangdong-gyu/Desktop/ai/MedVIL/LiTs Dataset'
+data_root = 'data_roott'
 batch_size = 4
 epoch = 5
 

@@ -19,8 +19,8 @@ if not os.path.exists(result_dir):
     os.mkdir(os.path.join(result_dir, 'png'))
     os.mkdir(os.path.join(result_dir, 'npy'))
 
-data_root = '/Users/hwangdong-gyu/Desktop/ai/MedVIL/LiTs Dataset'
-pretrained_root = '/Users/hwangdong-gyu/Desktop/ai/MedVIL/Unet/check_dir.........'
+data_root = 'data_root'
+pretrained_root = 'pretrained_root'
 batch_size = 1
 
 data_test = DataProvider(data_root)
