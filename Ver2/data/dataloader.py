@@ -10,7 +10,7 @@ class LiTSDataset(torch.utils.data.Dataset):
         super().__init__()
         self.path = path
         self.mode = mode
-        self.image_2d = []
+        self.image_2d_path = []
 
         dataList = sorted(glob.glob(os.path.join(path, 'volume-*.nii')))
         maskList = sorted(glob.glob(os.path.join(path, 'segmentation-*.nii')))
@@ -25,28 +25,29 @@ class LiTSDataset(torch.utils.data.Dataset):
             paired_list = paired_list[int(0.8 * len(paired_list)):]
 
         for vol_path, seg_path in paired_list:
-            vol = nib.load(vol_path).get_fdata().astype(np.float32)
             seg = nib.load(seg_path).get_fdata().astype(np.float32)
 
-            for i in range(vol.shape[2]):
-                vol_slice = vol[:, :, i]
-                seg_slice = seg[:, :, i]
+            for idx in range(seg.shape[2]):
+                seg_slice = seg[:, :, idx]
 
                 if np.any(seg_slice):
-                    vol_slice = np.clip(vol_slice, 54, 66)
-                    vol_slice = resize(vol_slice, (256, 256), preserve_range=True)
-                    seg_slice = resize(seg_slice, (256, 256), preserve_range=True)
-                    vol_slice = (vol_slice - 54) / (66 - 54)
-
-                    self.image_2d.append((vol_slice, seg_slice))
+                    self.image_2d_path.append((vol_path, seg_path, idx))
 
     def __len__(self):
-        return len(self.image_2d)
-
+        return len(self.image_2d_path)
+    
     def __getitem__(self, idx):
-        vol, seg = self.image_2d[idx]
+        vol_path, seg_path, slice_num = self.image_2d_path[idx]
 
-        vol = torch.tensor(vol, dtype=torch.float32).unsqueeze(0)  # (1, 256, 256)
-        seg = torch.tensor(seg, dtype=torch.float32).unsqueeze(0)
+        vol_slice = nib.load(vol_path).dataobj[:, :, slice_num].astype(np.float32)
+        seg_slice = nib.load(seg_path).dataobj[:, :, slice_num].astype(np.float32)
 
-        return vol, seg
+        vol_slice = np.clip(vol_slice, -100, 400)
+        vol_slice = resize(vol_slice, (256, 256), preserve_range=True)
+        seg_slice = resize(seg_slice, (256, 256), preserve_range=True)
+        vol_slice = (vol_slice + 100) / (400 + 100)
+
+        vol_slice = torch.tensor(vol_slice, dtype=torch.float32).unsqueeze(0)  # (1, 256, 256)
+        seg_slice = torch.tensor(seg_slice, dtype=torch.float32).unsqueeze(0)
+
+        return vol_slice, seg_slice

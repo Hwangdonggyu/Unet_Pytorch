@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 
-# 왜 unet에서 제공하는 loss 안쓰는지?
 class DiceLoss(nn.Module):
     def __init__(self, smooth=1e-5):
         super(DiceLoss, self).__init__()
@@ -12,8 +11,10 @@ class DiceLoss(nn.Module):
         pred_flat = pred.view(-1)
         target_flat = target.view(-1)
         intersection = (pred_flat * target_flat).sum()
-        return 1 - ((2. * intersection + self.smooth) / (pred_flat.sum() + target_flat.sum() + self.smooth))
-    
+        dice_score = (2. * intersection + self.smooth) / (pred_flat.sum() + target_flat.sum() + self.smooth)
+        dice_score = dice_score.clamp(0, 1)
+        return 1 - dice_score
+
 
 class BCEDiceLoss(nn.Module):
     def __init__(self):
@@ -22,6 +23,5 @@ class BCEDiceLoss(nn.Module):
         self.dice = DiceLoss()
 
     def forward(self, pred, target):
-        loss_bce = self.bce(pred, target)
-        loss_dice = self.dice(pred, target)
-        return loss_bce + loss_dice
+        target = (target > 0).float() 
+        return self.bce(pred, target) + self.dice(pred, target)
