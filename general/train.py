@@ -71,6 +71,8 @@ for epoch in range(1, epochs+1):
       writer.add_image("Train/Mask", batch_y[0], epoch, dataformats='CHW')
 
   avg_train_loss = train_loss / len(train_loader)
+  writer.add_scalar(f"Loss/train", avg_train_loss, epoch)
+
   print(f"Epoch {epoch}, Avg Train Loss: {avg_train_loss:.4f}, Time: {time.time() - epoch_start_time:.2f}s")
 
   model.eval()
@@ -89,11 +91,8 @@ for epoch in range(1, epochs+1):
         writer.add_image("Val/Mask", val_y[0], epoch, dataformats='CHW')
 
     avg_val_loss = val_loss / len(val_loader)
+    writer.add_scalar(f"Loss/val", avg_val_loss, epoch)
     print(f"Epoch {epoch}, Val Loss: {avg_val_loss:.4f}, Time: {time.time() - epoch_start_time:.2f}s")
-
-  writer.add_scalars("Loss", {
-    "train": avg_train_loss,
-    "val": avg_val_loss
-    }, epoch)
-
+    
+writer.close()
 torch.save(model.state_dict(), os.path.join(check_dir, 'unet_epoch%d.pth' % epoch))
